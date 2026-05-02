@@ -36,3 +36,31 @@ This interface rejects consumer-grade design in favor of a brutalist, high-densi
 2. **Main Grid Toggle:** Simulates a catastrophic city-wide blackout. Watch the physical wiring change states and the hydro-battery engage.
 3. **Inject Heavy Debris:** Drops heavy payload into the high-velocity stream to verify the deflection angle of the gate and the capacity of the debris pen.
 4. **CCTV Outfall Toggle:** Click "TO OCEAN DISCHARGE" on the main schematic to view the real-time high-pressure dispersal at the seawall.
+
+
+
+
+
+
+
+
+
+
+## IoT Architecture & Telemetry Network
+This system is a fully automated Cyber-Physical System (CPS). Human operators act in a supervisory capacity, while the IoT rule engine executes sub-second physical responses based on edge-sensor telemetry.
+
+### 1. Data Acquisition (Edge Sensors)
+The simulation represents data ingested from three primary sensor arrays:
+*   **Upstream Velocity Sensors:** Simulates data from Doppler flow meters deployed miles upstream to calculate inbound surge velocity and time-to-impact.
+*   **Silo Capacity Sensors:** Simulates ultrasonic depth sensors mounted in the drop shaft to measure volume and trigger the heavy discharge turbines.
+*   **Debris Impact Sensors:** Simulates piezoelectric vibration sensors on the trash rack that register heavy impacts and classify debris mass.
+
+### 2. The Network Layer (LoRaWAN Star Topology)
+Standard Wi-Fi or cellular mesh networks fail during cyclones due to power loss and node destruction. This system simulates a **LoRaWAN (Long Range Wide Area Network)** architecture. 
+*   Upstream sensors communicate directly with the War Room gateway via low-frequency, high-penetration radio waves. 
+*   This ensures telemetry remains uninterrupted even in extreme weather conditions or total grid collapse.
+
+### 3. Automated Actuation (The Rule Engine)
+The dashboard simulates an edge-computing rule engine that requires zero human input to execute critical safety protocols:
+*   **Hydrostatic Deployment:** Inbound velocity metrics automatically deploy the primary gate before the surge arrives.
+*   **Failover Execution:** Voltage-drop sensors on the main grid automatically switch the network gateway to the local hydro-battery, preventing a data blackout.
