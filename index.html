@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart City Flood Defense War Room</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #050505;
+            color: #d0d0d0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.4;
+            transition: background-color 0.1s linear;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .col {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .col-left {
+            flex: 1.2;
+            background-color: #000;
+            border-right: 2px solid #333;
+            position: relative;
+        }
+
+        .col-right {
+            flex: 0.8;
+            background-color: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Controls */
+        .panel {
+            border-bottom: 2px solid #333;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #333;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 25px;
+            background: #fff;
+            cursor: pointer;
+            border: 2px solid #000;
+            border-radius: 0;
+        }
+
+        button {
+            background: #111;
+            color: #fff;
+            border: 2px solid #555;
+            padding: 12px 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: inherit;
+            font-weight: bold;
+            display: block;
+            width: 100%;
+            text-align: center;
+            transition: all 0.1s linear;
+        }
+
+        button:hover {
+            background: #333;
+            border-color: #777;
+        }
+
+        button:active {
+            background: #555;
+        }
+
+        .btn-toggle {
+            background: #00FF00;
+            color: #000;
+            border-color: #00FF00;
+        }
+
+        .btn-toggle:hover {
+            background: #00CC00;
+        }
+
+        .btn-toggle.offline {
+            background: #FF0000;
+            color: #000;
+            border-color: #FF0000;
+        }
+
+        .btn-toggle.offline:hover {
+            background: #CC0000;
+        }
+
+        /* Telemetry */
+        .telemetry-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed #333;
+        }
+
+        .telemetry-item:last-child {
+            border-bottom: none;
+        }
+
+        .telemetry-label {
+            color: #888;
+        }
+
+        .telemetry-value {
+            font-weight: bold;
+        }
+
+        .status-nominal {
+            color: #00FF00;
+        }
+
+        .status-warning {
+            color: #FFFF00;
+        }
+
+        .status-critical {
+            color: #FF0000;
+        }
+
+        /* Log */
+        .log-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            word-break: break-all;
+            display: flex;
+        }
+
+        .log-time {
+            color: #666;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .log-msg {
+            flex-grow: 1;
+        }
+
+        .log-msg.critical {
+            color: #FF0000;
+            font-weight: bold;
+        }
+
+        .log-msg.warning {
+            color: #FFFF00;
+        }
+
+        .log-msg.nominal {
+            color: #00FF00;
+        }
+
+        .log-msg.action {
+            color: #00FFFF;
+        }
+
+        /* SVG Styles */
+        svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .svg-concrete {
+            fill: #1a1a1a;
+            stroke: #444;
+            stroke-width: 2;
+        }
+
+        .svg-water {
+            fill: #00FFFF;
+            opacity: 0.6;
+        }
+
+        .svg-water-critical {
+            fill: #FF0000;
+            opacity: 0.8;
+        }
+
+        .svg-gate {
+            fill: #333;
+            stroke: #777;
+            stroke-width: 4;
+        }
+
+        .svg-trash-rack {
+            stroke: #555;
+            stroke-width: 6;
+            stroke-dasharray: 8 4;
+        }
+
+        .svg-turbine-body {
+            fill: #111;
+            stroke: #444;
+            stroke-width: 2;
+        }
+
+        .svg-turbine-fan {
+            stroke: #fff;
+            stroke-width: 4;
+            stroke-linecap: square;
+        }
+
+        .svg-turbine-core {
+            fill: #333;
+        }
+
+        .svg-turbine-active {
+            stroke: #FF0000;
+            filter: drop-shadow(0 0 5px #FF0000);
+        }
+
+        .svg-debris {
+            fill: #FFFF00;
+        }
+
+        .svg-text {
+            fill: #666;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+
+        /* Electrical Wiring System */
+        .svg-wire {
+            fill: none;
+            stroke-width: 3;
+            stroke-dasharray: 8 4;
+            stroke: #333;
+        }
+        .wire-flow {
+            animation: wirePulse 1s linear infinite;
+        }
+        @keyframes wirePulse {
+            from { stroke-dashoffset: 24; }
+            to { stroke-dashoffset: 0; }
+        }
+        .wire-grid { stroke: #00FF00; }   /* Green = Grid Power */
+        .wire-hydro { stroke: #00FFFF; }  /* Cyan = Hydro Charging */
+        .wire-dead { stroke: #222; animation: none; } /* Dark = No Power */
+
+        /* Kinetic Waterfall Physics */
+        .svg-water-stream {
+            stroke: #00FFFF;
+            stroke-dasharray: 40 20;
+            animation: plummet 0.4s linear infinite;
+        }
+        @keyframes plummet {
+            from { stroke-dashoffset: 60; }
+            to { stroke-dashoffset: 0; }
+        }
+        .clickable-text {
+            cursor: pointer;
+            transition: all 0.2s;
+            pointer-events: auto;
+        }
+        .clickable-text:hover {
+            opacity: 1 !important;
+            fill: #FFFFFF !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="col col-left">
+        <svg id="svgMain" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet">
+            <!-- Background Grid -->
+            <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#111" stroke-width="1" />
+                </pattern>
+                <clipPath id="siloClip">
+                    <rect x="250" y="400" width="200" height="350" />
+                </clipPath>
+                <clipPath id="waterfallClip">
+                    <rect id="waterfallRect" x="250" y="250" width="200" height="0" />
+                </clipPath>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+
+            <!-- Infrastructure Concrete (Perfectly Mapped) -->
+            <!-- Infrastructure Concrete (Now with a hollow Debris Pen) -->
+            <path
+                d="M 0 400 L 100 400 L 100 500 L 240 500 L 240 400 L 250 400 L 250 750 L 450 750 L 450 300 L 500 300 L 500 500 L 750 500 L 750 300 L 800 300 L 800 800 L 0 800 Z"
+                class="svg-concrete" />
+
+            <!-- Turbine Pipe -->
+            <rect x="450" y="650" width="150" height="40" class="svg-concrete" fill="#0a0a0a" />
+
+            <!-- Labels -->
+            <text x="140" y="490" class="svg-text">BASIN</text>
+            <text x="320" y="550" class="svg-text" transform="rotate(90, 320, 550)">DROP SHAFT</text>
+            <text x="340" y="730" class="svg-text">SILO</text>
+            <text x="480" y="705" class="svg-text">JET TURBINE</text>
+            <text x="540" y="490" class="svg-text">DEBRIS PEN</text>
+            <text x="490" y="290" class="svg-text">SECONDARY WALL</text>
+
+            <!-- Water Elements -->
+            <polygon id="riverWater" points="0,400 100,400 100,400 0,400" class="svg-water" />
+            <rect id="basinWater" x="100" y="500" width="140" height="0" class="svg-water" />
+            <!-- Kinetic Waterfall -->
+            <g id="waterfallGroup" clip-path="url(#waterfallClip)" style="opacity: 0;">
+                <!-- Ambient water mist/background -->
+                <rect x="250" y="230" width="200" height="520" fill="#00FFFF" opacity="0.15" />
+                <!-- High-velocity falling streams -->
+                <line x1="265" y1="230" x2="265" y2="750" class="svg-water-stream" stroke-width="3" style="animation-duration: 0.38s;" />
+                <line x1="290" y1="230" x2="290" y2="750" class="svg-water-stream" stroke-width="5" style="animation-duration: 0.28s;" />
+                <line x1="320" y1="230" x2="320" y2="750" class="svg-water-stream" stroke-width="4" />
+                <line x1="350" y1="230" x2="350" y2="750" class="svg-water-stream" stroke-width="6" style="animation-duration: 0.3s;" />
+                <!-- The Main Drive Stream (Aimed dead-center at the Micro-Gen at x=375) -->
+                <line x1="375" y1="230" x2="375" y2="750" class="svg-water-stream" stroke-width="8" style="animation-duration: 0.25s;" /> 
+                <line x1="400" y1="230" x2="400" y2="750" class="svg-water-stream" stroke-width="5" style="animation-duration: 0.35s;" />
+                <line x1="430" y1="230" x2="430" y2="750" class="svg-water-stream" stroke-width="3" style="animation-duration: 0.45s;" />
+            </g>
+            <rect id="siloWater" x="250" y="750" width="200" height="0" class="svg-water" clip-path="url(#siloClip)" />
+            <rect id="dischargeWater" x="450" y="660" width="350" height="20" class="svg-water" style="opacity: 0;" />
+
+            <!-- Primary Gate (Hinged at upstream side: x=100, y=400) -->
+            <line id="primaryGate" x1="100" y1="400" x2="312" y2="400" class="svg-gate" />
+
+            <!-- Trash Rack (Anchored to wall at 450,300. Reaches out to catch deployed gate) -->
+            <line id="trashRack" x1="250" y1="250" x2="450" y2="300" class="svg-trash-rack" />
+            <text x="310" y="260" class="svg-text" transform="rotate(15, 310, 260)">TRASH RACK</text>
+
+            <!-- Jet Turbine -->
+            <circle cx="530" cy="670" r="30" class="svg-turbine-body" />
+            <g id="turbineBlades">
+                <line x1="530" y1="645" x2="530" y2="695" class="svg-turbine-fan" id="blade1" />
+                <line x1="505" y1="670" x2="555" y2="670" class="svg-turbine-fan" id="blade2" />
+            </g>
+            <circle cx="530" cy="670" r="8" class="svg-turbine-core" />
+
+            <!-- Micro-Hydro Generator (The Brain's Power Source) -->
+            <g id="microTurbineGroup" transform="translate(375, 550)">
+                <circle cx="0" cy="0" r="20" fill="none" stroke="#555" stroke-width="2" stroke-dasharray="4 4"/>
+                <g id="microBlades">
+                    <line x1="0" y1="-15" x2="0" y2="15" stroke="#00FF00" stroke-width="3" />
+                    <line x1="-15" y1="0" x2="15" y2="0" stroke="#00FF00" stroke-width="3" />
+                </g>
+                <circle cx="0" cy="0" r="5" fill="#333" />
+            </g>
+            <text x="345" y="525" class="svg-text" style="font-size: 10px;">MICRO-GEN</text>
+
+            <!-- Power Routing Schematic -->
+            <g id="powerSchematic">
+                <!-- Buried Battery Bank (Safely inside concrete) -->
+                <rect x="620" y="560" width="80" height="50" class="svg-concrete" stroke="#555" />
+                <text x="625" y="575" class="svg-text" style="font-size: 10px; fill: #aaa;">BATTERY</text>
+                <text x="625" y="595" class="svg-text" id="battSvgPercent" style="font-size: 16px; font-weight: bold; fill: #00FF00;">100%</text>
+
+                <!-- Wire 1: Micro-Gen to Battery (Charging) -->
+                <path id="wireHydro" d="M 395 550 L 620 565" class="svg-wire wire-dead" />
+                <text x="420" y="535" class="svg-text" style="font-size: 10px;">HYDRO CHARGE (kW)</text>
+
+                <!-- Wire 2: Main Grid to War Room/Battery -->
+                <path id="wireGrid" d="M 800 585 L 700 585" class="svg-wire wire-grid wire-flow" />
+                <text x="710" y="575" class="svg-text" style="font-size: 10px;">GRID (IoT)</text>
+
+                <!-- Wire 3: Main Grid to Jet Turbine (Muscle) -->
+                <!-- Routed through the ceiling, plugging into the TOP of the turbine -->
+                <path id="wireTurbine" d="M 800 620 L 530 620 L 530 640" class="svg-wire wire-grid wire-flow" />
+                <text x="620" y="615" class="svg-text" style="font-size: 10px;">MAIN GRID (MEGAWATTS)</text>
+                
+                <!-- Ocean Discharge Label (Showing where the water actually goes) -->
+                <text id="btnToOcean" x="620" y="705" class="svg-text clickable-text" style="font-size: 12px; font-weight: bold; fill: #00FFFF; opacity: 0.7;">TO OCEAN DISCHARGE ►</text>
+            </g>
+
+            <!-- Debris -->
+            <g id="debrisBlock" class="svg-debris" style="opacity: 0;">
+                <g id="debrisCar" style="display: none;">
+                    <polygon points="-40,10 -20,-10 20,-10 40,10 50,10 50,30 -40,30" fill="#FFFF00" stroke="#000"
+                        stroke-width="2" />
+                    <circle cx="-20" cy="30" r="10" fill="#111" />
+                    <circle cx="30" cy="30" r="10" fill="#111" />
+                </g>
+                <g id="debrisTree" style="display: none;">
+                    <rect x="-8" y="10" width="16" height="30" fill="#FFFF00" stroke="#000" stroke-width="2" />
+                    <polygon points="0,-30 -30,10 30,10" fill="#FFFF00" stroke="#000" stroke-width="2" />
+                    <polygon points="0,-10 -40,30 40,30" fill="#FFFF00" stroke="#000" stroke-width="2" />
+                </g>
+            </g>
+
+            <g id="fallenDebrisContainer"></g>
+        </svg>
+
+        <!-- CAMERA 2: OCEAN OUTFALL FEED -->
+        <svg id="svgOcean" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet" style="display: none; background-color: #000;">
+            <defs>
+                <pattern id="gridOcean" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#111" stroke-width="1"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#gridOcean)" />
+
+            <!-- Ocean Seawall Concrete -->
+            <path d="M 0 350 L 250 350 L 250 800 L 0 800 Z" class="svg-concrete" />
+            <text x="70" y="400" class="svg-text">SEAWALL</text>
+
+            <!-- The Ocean / Bay -->
+            <rect x="250" y="550" width="550" height="250" class="svg-water" style="opacity: 0.4;" />
+            <text x="450" y="750" class="svg-text" style="opacity: 0.5;">BAY OF BENGAL</text>
+
+            <!-- The Massive Discharge Pipe -->
+            <rect x="0" y="600" width="250" height="80" class="svg-concrete" fill="#0a0a0a" />
+            <text x="50" y="645" class="svg-text" style="font-size: 10px; fill: #555;">DISCHARGE TUNNEL</text>
+            
+            <!-- The Blasting Water (Tied to Turbine State) -->
+            <g id="oceanBlast" style="opacity: 0;">
+                <rect x="250" y="610" width="450" height="60" class="svg-water" />
+                <line x1="250" y1="625" x2="650" y2="625" class="svg-water-stream" stroke-width="8" />
+                <line x1="250" y1="640" x2="700" y2="640" class="svg-water-stream" stroke-width="12" style="animation-duration: 0.2s;" />
+                <line x1="250" y1="655" x2="600" y2="655" class="svg-water-stream" stroke-width="6" style="animation-duration: 0.3s;" />
+            </g>
+
+            <!-- UI: Camera Identification & Back Button -->
+            <text id="btnToMain" x="20" y="40" class="svg-text clickable-text" style="font-size: 14px; font-weight: bold; fill: #FFFF00;">◄ SWITCH TO CAM 1: MAIN FACILITY</text>
+            <text x="550" y="40" class="svg-text" style="fill: #888;">CAM 2: OCEAN OUTFALL</text>
+            <circle cx="530" cy="35" r="5" fill="#FF0000">
+                <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite" />
+            </circle>
+        </svg>
+    </div>
+
+    <div class="col col-right">
+        <div class="panel">
+            <h2>Sensor Controls</h2>
+            <div class="control-group">
+                <label><span>Upstream Velocity</span> <span id="velReadout" class="telemetry-value">0 mph</span></label>
+                <input type="range" id="velocitySlider" class="slider" min="0" max="100" value="0">
+            </div>
+            <div class="control-group">
+                <button id="powerToggle" class="btn-toggle">MAIN GRID: ONLINE</button>
+            </div>
+            <div class="control-group" style="margin-bottom: 0;">
+                <button id="debrisBtn">INJECT HEAVY DEBRIS</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Telemetry Readout</h2>
+            <div class="telemetry-item">
+                <span class="telemetry-label">LoRaWAN Network</span>
+                <span id="statusNet" class="telemetry-value status-nominal">CONNECTED</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label">Silo Capacity</span>
+                <span id="statusCap" class="telemetry-value status-nominal">0.0%</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label">Local Hydro-Battery</span>
+                <span id="statusBat" class="telemetry-value status-nominal">CHARGING / STANDBY</span>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContainer">
+            <div class="log-entry"><span class="log-time">[00:00:00]</span> <span class="log-msg nominal">SYSTEM
+                    INITIALIZED. Awaiting telemetry...</span></div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const velocitySlider = document.getElementById('velocitySlider');
+        const velReadout = document.getElementById('velReadout');
+        const powerToggle = document.getElementById('powerToggle');
+        const debrisBtn = document.getElementById('debrisBtn');
+        const statusNet = document.getElementById('statusNet');
+        const statusCap = document.getElementById('statusCap');
+        const statusBat = document.getElementById('statusBat');
+        const logContainer = document.getElementById('logContainer');
+
+        // SVG Elements
+        const riverWater = document.getElementById('riverWater');
+        const basinWater = document.getElementById('basinWater');
+        const siloWater = document.getElementById('siloWater');
+        const primaryGate = document.getElementById('primaryGate');
+        const dischargeWater = document.getElementById('dischargeWater');
+        const turbineBlades = document.getElementById('turbineBlades');
+        const blade1 = document.getElementById('blade1');
+        const blade2 = document.getElementById('blade2');
+        const debrisBlock = document.getElementById('debrisBlock');
+
+        const svgMain = document.getElementById('svgMain');
+        const svgOcean = document.getElementById('svgOcean');
+        const btnToOcean = document.getElementById('btnToOcean');
+        const btnToMain = document.getElementById('btnToMain');
+        const oceanBlast = document.getElementById('oceanBlast');
+
+        // State Variables
+        let microRotation = 0;
+        let batteryCharge = 100; // Starts at 100%
+        let velocity = 0;
+        let gridPower = true;
+        let basinLevel = 0; // max 200 (y: 300 to 100)
+        let siloCapacity = 0; // max 100 (%)
+        let gateAngle = 0; // 0 to 45 degrees
+        let turbineActive = false;
+        let turbineRotation = 0;
+        let debrisActive = false;
+        let debrisProgress = 0;
+
+        let waterfallDropTop = 250;
+        let waterfallDropBottom = 250;
+
+        // Logging Flags
+        let flags = {
+            surgeLogged: false,
+            capacityLogged: false,
+            batteryLogged: false
+        };
+
+        // Initialize log time correctly once
+        document.querySelector('.log-time').innerText = `[${new Date().toISOString().substring(11, 23)}]`;
+
+        // Utility: Append to Log
+        function log(message, type = "nominal") {
+            const el = document.createElement("div");
+            el.className = "log-entry";
+            const time = new Date().toISOString().substring(11, 23);
+            el.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-msg ${type}">${message}</span>`;
+            logContainer.appendChild(el);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Controls Event Listeners
+        velocitySlider.addEventListener('input', (e) => {
+            velocity = parseFloat(e.target.value);
+            velReadout.innerText = `${velocity} mph`;
+        });
+
+        powerToggle.addEventListener('click', () => {
+            gridPower = !gridPower;
+            if (gridPower) {
+                powerToggle.innerText = "MAIN GRID: ONLINE";
+                powerToggle.className = "btn-toggle";
+                statusNet.innerText = "CONNECTED";
+                statusNet.className = "telemetry-value status-nominal";
+                statusBat.innerText = "CHARGING / STANDBY";
+                statusBat.className = "telemetry-value status-nominal";
+                log("GRID RESTORED: Main power online.", "nominal");
+            } else {
+                powerToggle.innerText = "MAIN GRID: OFFLINE";
+                powerToggle.className = "btn-toggle offline";
+                statusNet.innerText = "OFFLINE (FAILOVER)";
+                statusNet.className = "telemetry-value status-critical";
+                statusBat.innerText = "DISCHARGING";
+                statusBat.className = "telemetry-value status-warning";
+                log("GRID FAILURE: LoRaWAN network failed over to local hydro-turbine battery.", "critical");
+
+                // UI Flash
+                document.body.style.backgroundColor = "#300";
+                setTimeout(() => document.body.style.backgroundColor = "#050505", 100);
+                setTimeout(() => document.body.style.backgroundColor = "#300", 200);
+                setTimeout(() => document.body.style.backgroundColor = "#050505", 300);
+            }
+        });
+
+        let debrisType = 'car';
+        let debrisTargetX = 550;
+
+        debrisBtn.addEventListener('click', () => {
+            if (!debrisActive) {
+                debrisActive = true;
+                debrisProgress = 0;
+                debrisBlock.style.opacity = "1";
+
+                // Randomize between a Car and a Tree
+                debrisType = Math.random() > 0.5 ? 'car' : 'tree';
+                document.getElementById('debrisCar').style.display = debrisType === 'car' ? 'block' : 'none';
+                document.getElementById('debrisTree').style.display = debrisType === 'tree' ? 'block' : 'none';
+
+                // Randomize landing spot in the pen (x=500 to x=750)
+                debrisTargetX = 530 + Math.random() * 190;
+
+                log("IMPACT: Heavy " + debrisType + " detected in stream. Bracing trash rack.", "warning");
+            }
+        });
+
+        // CCTV Camera Switch Logic
+        btnToOcean.addEventListener('click', () => {
+            svgMain.style.display = 'none';
+            svgOcean.style.display = 'block';
+            log("CCTV: Switched to Cam 2 (Ocean Outfall).", "nominal");
+        });
+
+        btnToMain.addEventListener('click', () => {
+            svgOcean.style.display = 'none';
+            svgMain.style.display = 'block';
+            log("CCTV: Switched to Cam 1 (Main Facility).", "nominal");
+        });
+
+        // The Simulation Engine Loop
+        let lastTime = performance.now();
+
+        // State Variables
+        let isOvertopping = false;
+
+        function loop(time) {
+            let dt = (time - lastTime) / 1000;
+            if (dt > 0.1) dt = 0.1; // Cap dt to avoid large jumps if tab is inactive
+            lastTime = time;
+
+            // 1. Fill Basin
+            if (velocity > 0) {
+                basinLevel += velocity * dt * 1.0;
+                if (basinLevel > 200) basinLevel = 200; // Basin full
+            }
+
+            // 2. Deploy Gate (Hydrostatically linked to water level)
+            gateAngle = (basinLevel / 200) * 45;
+
+            if (basinLevel >= 200 && !flags.surgeLogged) {
+                log("SURGE DETECTED: Primary hydrostatic deflector fully deployed.", "warning");
+                flags.surgeLogged = true;
+            }
+
+            // 3. Overtopping into Silo
+            let currentlyOvertopping = (gateAngle >= 45 && velocity > 40);
+
+            if (currentlyOvertopping) {
+                if (!isOvertopping) {
+                    // Rising edge: reset the waterfall so it falls from the top!
+                    waterfallDropTop = 250;
+                    waterfallDropBottom = 250;
+                }
+                isOvertopping = true;
+
+                siloCapacity += velocity * dt * 0.15; // Rate of filling
+                if (siloCapacity > 100) siloCapacity = 100;
+
+                // Splashing motion: wobbles the top of the waterfall based on velocity
+                let splash = Math.sin(time / 150) * (velocity * 0.15); 
+                waterfallDropTop = 250 + splash;
+
+                waterfallDropBottom += 800 * dt; // Water falls rapidly
+            } else {
+                isOvertopping = false;
+                // If not overtopping, the stream falls and dries up
+                waterfallDropTop += 800 * dt;
+                waterfallDropBottom += 800 * dt;
+            }
+
+            let maxBottom = 750 - ((siloCapacity / 100) * 350);
+            if (waterfallDropBottom > maxBottom) waterfallDropBottom = maxBottom;
+            if (waterfallDropTop > waterfallDropBottom) waterfallDropTop = waterfallDropBottom;
+
+            // 4. Auto-activate Turbine (ONLY IF GRID IS ONLINE)
+            if (siloCapacity >= 85 && !turbineActive && gridPower) {
+                turbineActive = true;
+                if (!flags.capacityLogged) {
+                    log("CRITICAL CAPACITY: Igniting heavy discharge turbines. Pumping 200 tons/sec.", "critical");
+                    flags.capacityLogged = true;
+                }
+            }
+
+            // 5. Turbine Discharging & Kill Switch
+            if (turbineActive) {
+                if (!gridPower) {
+                    // KILL SWITCH: Grid died while pumping!
+                    turbineActive = false;
+                    log("SYSTEM HALT: Main grid lost. Jet turbines offline. Silo filling rapidly.", "critical");
+                } else {
+                    // Pumping normally
+                    siloCapacity -= 12 * dt;
+                    if (siloCapacity <= 0) {
+                        siloCapacity = 0;
+                        turbineActive = false;
+                        flags.capacityLogged = false; // Reset log flag
+                    }
+                }
+            }
+
+            // 6. Catastrophic Overflow Check
+            let catastrophic = false;
+            if (siloCapacity >= 100) {
+                catastrophic = true;
+            }
+
+            updateVisuals(isOvertopping, catastrophic, dt);
+
+            requestAnimationFrame(loop);
+        }
+
+        function updateVisuals(overtopping, catastrophic, dt) {
+            // Add subtle wave physics based on time
+            let now = performance.now();
+            let wave1 = (basinLevel > 0) ? Math.sin(now / 200) * 3 : 0;
+            let wave2 = (basinLevel > 0) ? Math.cos(now / 300) * 2 : 0;
+
+            // Basin & River Water Logic
+            let fillHeight = basinLevel / 2; // Map 0-200 to 0-100 pixels
+            basinWater.setAttribute("y", 500 - fillHeight + wave1);
+            basinWater.setAttribute("height", Math.max(0, fillHeight - wave1));
+
+            let rad = -gateAngle * Math.PI / 180;
+            let tipX = 100 + 212 * Math.cos(rad);
+            let tipY = 400 + 212 * Math.sin(rad);
+
+            let surfY = 400 - fillHeight;
+            let rightX = 100;
+            let rightSurfY = surfY + wave1;
+            let leftSurfY = surfY + wave2;
+
+            if (gateAngle > 0) {
+                rightX = tipX;
+                rightSurfY = tipY; // Pinned to the physical gate tip
+            }
+            riverWater.setAttribute("points", `0,400 100,400 ${rightX},${rightSurfY} 0,${leftSurfY}`);
+
+            // Gate Angle (Hinged at x:100, y:400, rotates UP/Counter-Clockwise)
+            primaryGate.setAttribute("transform", `rotate(${-gateAngle}, 100, 400)`);
+
+            // Waterfall visual - animate falling
+            const waterfallRect = document.getElementById('waterfallRect');
+            const waterfallGroup = document.getElementById('waterfallGroup');
+            waterfallRect.setAttribute("y", waterfallDropTop);
+            waterfallRect.setAttribute("height", Math.max(0, waterfallDropBottom - waterfallDropTop));
+            waterfallGroup.style.opacity = (waterfallDropBottom > waterfallDropTop) ? "1" : "0";
+
+            // Silo Water (0-100% maps to height 0-350px, floor at y=750)
+            let siloH = (siloCapacity / 100) * 350;
+            let siloWave = (siloCapacity > 0) ? Math.sin(now / 150) * 4 : 0;
+            siloWater.setAttribute("y", 750 - siloH + siloWave);
+            siloWater.setAttribute("height", Math.max(0, siloH - siloWave));
+
+            // Telemetry Readout CSS
+            statusCap.innerText = siloCapacity.toFixed(1) + "%";
+            if (siloCapacity >= 85) {
+                statusCap.className = "telemetry-value status-critical";
+            } else if (siloCapacity >= 50) {
+                statusCap.className = "telemetry-value status-warning";
+            } else {
+                statusCap.className = "telemetry-value status-nominal";
+            }
+
+            // Turbine Spin
+            if (turbineActive) {
+                turbineRotation += 360 * dt * (gridPower ? 3 : 2); // Spin faster on grid
+                turbineBlades.setAttribute("transform", `rotate(${turbineRotation}, 530, 670)`);
+                blade1.classList.add("svg-turbine-active");
+                blade2.classList.add("svg-turbine-active");
+                dischargeWater.style.opacity = "0.8";
+            } else {
+                blade1.classList.remove("svg-turbine-active");
+                blade2.classList.remove("svg-turbine-active");
+                dischargeWater.style.opacity = "0";
+            }
+
+            // Ocean Outfall Blast Logic
+            if (turbineActive) {
+                oceanBlast.style.opacity = "0.9";
+            } else {
+                oceanBlast.style.opacity = "0";
+            }
+
+            // Micro-Generator & Battery Logic
+            const microBlades = document.getElementById('microBlades');
+            
+            if (overtopping) {
+                // Water is falling! Spin the generator and charge the battery.
+                microRotation += 360 * dt * 2;
+                microBlades.setAttribute("transform", `rotate(${microRotation})`);
+                batteryCharge = Math.min(100, batteryCharge + (dt * 2)); 
+            }
+
+            // If the grid is dead, the War Room drains the battery.
+            if (!gridPower) {
+                batteryCharge = Math.max(0, batteryCharge - (dt * 1.5));
+            }
+
+            // Update Telemetry UI
+            if (gridPower) {
+                statusBat.innerText = overtopping ? `CHARGING (${batteryCharge.toFixed(1)}%)` : `STANDBY (${batteryCharge.toFixed(1)}%)`;
+                statusBat.className = "telemetry-value status-nominal";
+            } else {
+                statusBat.innerText = `DISCHARGING (${batteryCharge.toFixed(1)}%)`;
+                statusBat.className = batteryCharge > 20 ? "telemetry-value status-warning" : "telemetry-value status-critical";
+            }
+
+            // Brutal Reality: If battery hits 0, the UI dies.
+            if (batteryCharge === 0) {
+                document.body.style.opacity = "0.2";
+                if (!flags.batteryLogged) {
+                    log("FATAL: Hydro-battery depleted. Telemetry lost. War Room offline.", "critical");
+                    flags.batteryLogged = true;
+                }
+            } else {
+                document.body.style.opacity = "1";
+                flags.batteryLogged = false;
+            }
+
+            // Catastrophic Error Visual
+            if (catastrophic) {
+                siloWater.classList.add("svg-water-critical");
+                document.body.style.boxShadow = "inset 0 0 80px red";
+            } else {
+                siloWater.classList.remove("svg-water-critical");
+                document.body.style.boxShadow = "none";
+            }
+
+            // Debris Animation
+            if (debrisActive) {
+                debrisProgress += dt * 0.3; // ~3.3 seconds total
+                if (debrisProgress >= 1) {
+                    debrisProgress = 1;
+                    debrisActive = false;
+                    debrisBlock.style.opacity = "0";
+                    log("SYSTEM: " + debrisType.toUpperCase() + " cleared into debris pen.", "success");
+
+                    // Leave a permanent copy in the pen
+                    let fallen = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                    let sourceId = debrisType === 'car' ? 'debrisCar' : 'debrisTree';
+                    let clone = document.getElementById(sourceId).cloneNode(true);
+                    clone.style.display = 'block';
+                    fallen.appendChild(clone);
+                    fallen.setAttribute("transform", `translate(${debrisTargetX}, 480)`);
+                    document.getElementById('fallenDebrisContainer').appendChild(fallen);
+                } else {
+                    let x, y, rot;
+                    if (debrisProgress < 0.4) {
+                        // Phase 1: Float downstream on the river surface
+                        let p = debrisProgress / 0.4;
+                        x = -50 + p * (rightX + 50);
+                        y = surfY - 5;
+                        rot = Math.sin(p * Math.PI * 6) * 10;
+                    } else if (!overtopping) {
+                        // Debris is blocked by the gate!
+                        x = rightX - 25; // Bumped against the gate
+                        y = surfY - 5;
+                        rot = Math.sin(now / 200) * 5; // Bobbing in the water
+                        debrisProgress = 0.39; // Pause the animation right before phase 2
+                    } else if (debrisProgress < 0.7) {
+                        // Phase 2: Slide down the trash rack
+                        let p = (debrisProgress - 0.4) / 0.3;
+                        x = rightX + p * (450 - rightX);
+                        let rackY = 250 + (x - 250) * 0.25;
+                        y = Math.max(surfY, rackY) - 35; // Follow rack or float if higher
+                        rot = p * 180;
+                    } else if (debrisProgress < 0.85) {
+                        // Phase 3: Slide across the secondary wall
+                        let p = (debrisProgress - 0.7) / 0.15;
+                        x = 450 + p * 50; // 450 to 500
+                        y = 300 - Math.sin(p * Math.PI) * 15; // small bounce
+                        rot = 180 + p * 90; // tumbling to 270
+                    } else {
+                        // Phase 4: Drop into Debris Pen
+                        let p = (debrisProgress - 0.85) / 0.15;
+                        x = 500 + p * (debrisTargetX - 500);
+                        y = 300 + p * 180; // drops to y=480 floor
+                        rot = 270 + p * 90; // finishes flat at 360
+                    }
+                    debrisBlock.setAttribute("transform", `translate(${x}, ${y}) rotate(${rot})`);
+                }
+            }
+
+            // Electrical Schematic Logic
+            const wireHydro = document.getElementById('wireHydro');
+            const wireGrid = document.getElementById('wireGrid');
+            const wireTurbine = document.getElementById('wireTurbine');
+            const battSvgPercent = document.getElementById('battSvgPercent');
+
+            // Update physical battery text
+            battSvgPercent.innerText = batteryCharge.toFixed(0) + "%";
+
+            // Hydro Charging Wire (Cyan when water falls)
+            if (overtopping) {
+                wireHydro.setAttribute("class", "svg-wire wire-hydro wire-flow");
+            } else {
+                wireHydro.setAttribute("class", "svg-wire wire-dead");
+            }
+
+            // Grid / Failover Wires
+            if (gridPower) {
+                // Everything is green and flowing
+                wireGrid.setAttribute("class", "svg-wire wire-grid wire-flow");
+                wireTurbine.setAttribute("class", "svg-wire wire-grid wire-flow");
+                battSvgPercent.style.fill = "#00FF00"; 
+            } else {
+                // Grid dies. Wires go dark. Battery turns warning yellow.
+                wireGrid.setAttribute("class", "svg-wire wire-dead");
+                wireTurbine.setAttribute("class", "svg-wire wire-dead");
+                battSvgPercent.style.fill = "#FFFF00"; 
+            }
+        }
+
+        // Start engine
+        requestAnimationFrame(loop);
+    </script>
+</body>
+
+</html>
