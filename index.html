@@ -212,6 +212,34 @@
             color: #00FFFF;
         }
 
+        /* Sensor Network (SCADA) */
+        .svg-sensor {
+            fill: #FF0000;
+            stroke: #111;
+            stroke-width: 1;
+            filter: drop-shadow(0 0 3px #FF0000);
+        }
+        .svg-sensor-label {
+            fill: #FF0000;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+        .svg-sensor-beam {
+            stroke: #FF0000;
+            stroke-width: 1.5;
+            stroke-dasharray: 4 4;
+            opacity: 0.6;
+        }
+        .svg-stilling-pipe {
+            stroke: #555;
+            stroke-width: 6;
+            stroke-dasharray: 6 3;
+            fill: none;
+        }
+
         /* SVG Styles */
         svg {
             width: 100%;
@@ -288,16 +316,37 @@
             stroke-dasharray: 8 4;
             stroke: #333;
         }
+
         .wire-flow {
             animation: wirePulse 1s linear infinite;
         }
+
         @keyframes wirePulse {
-            from { stroke-dashoffset: 24; }
-            to { stroke-dashoffset: 0; }
+            from {
+                stroke-dashoffset: 24;
+            }
+
+            to {
+                stroke-dashoffset: 0;
+            }
         }
-        .wire-grid { stroke: #00FF00; }   /* Green = Grid Power */
-        .wire-hydro { stroke: #00FFFF; }  /* Cyan = Hydro Charging */
-        .wire-dead { stroke: #222; animation: none; } /* Dark = No Power */
+
+        .wire-grid {
+            stroke: #00FF00;
+        }
+
+        /* Green = Grid Power */
+        .wire-hydro {
+            stroke: #00FFFF;
+        }
+
+        /* Cyan = Hydro Charging */
+        .wire-dead {
+            stroke: #222;
+            animation: none;
+        }
+
+        /* Dark = No Power */
 
         /* Kinetic Waterfall Physics */
         .svg-water-stream {
@@ -305,15 +354,23 @@
             stroke-dasharray: 40 20;
             animation: plummet 0.4s linear infinite;
         }
+
         @keyframes plummet {
-            from { stroke-dashoffset: 60; }
-            to { stroke-dashoffset: 0; }
+            from {
+                stroke-dashoffset: 60;
+            }
+
+            to {
+                stroke-dashoffset: 0;
+            }
         }
+
         .clickable-text {
             cursor: pointer;
             transition: all 0.2s;
             pointer-events: auto;
         }
+
         .clickable-text:hover {
             opacity: 1 !important;
             fill: #FFFFFF !important;
@@ -356,6 +413,35 @@
             <text x="540" y="490" class="svg-text">DEBRIS PEN</text>
             <text x="490" y="290" class="svg-text">SECONDARY WALL</text>
 
+            <!-- SENSOR NETWORK: SCADA ACQUISITION LAYER -->
+            <g id="sensorNetwork">
+                <!-- 1. Doppler Ultrasonic Flow Meter (Upstream, measuring velocity without contact) -->
+                <rect x="20" y="230" width="16" height="12" class="svg-sensor" />
+                <line x1="28" y1="242" x2="60" y2="350" class="svg-sensor-beam" />
+                <text x="5" y="220" class="svg-sensor-label">DOPPLER FLOW</text>
+
+                <!-- 2. Piezoelectric Impact Transducers (Mounted directly on Trash Rack) -->
+                <circle cx="340" cy="272" r="5" class="svg-sensor" />
+                <circle cx="380" cy="282" r="5" class="svg-sensor" />
+                <text x="350" y="255" class="svg-sensor-label">PIEZO IMPACT</text>
+
+                <!-- 3. The Stilling Well & 80GHz Radar (Mounted to Silo wall, safely away from Drop Shaft) -->
+                <line x1="430" y1="450" x2="430" y2="740" class="svg-stilling-pipe" />
+                <rect x="413" y="435" width="34" height="22" fill="#1a1a1a" stroke="#555" stroke-width="2" rx="3" />
+                <rect x="418" y="440" width="24" height="12" class="svg-sensor" />
+                <line x1="430" y1="452" x2="430" y2="740" class="svg-sensor-beam" />
+                <text x="445" y="445" class="svg-sensor-label">80GHz RADAR</text>
+                <text x="445" y="457" class="svg-sensor-label" style="fill:#888; font-size: 8px;">(INSIDE STILLING WELL)</text>
+
+                <!-- 4. Submersible Hydrostatic Transmitter (Anchored to Silo Floor) -->
+                <rect x="260" y="735" width="18" height="15" class="svg-sensor" />
+                <text x="285" y="745" class="svg-sensor-label">HYDROSTATIC</text>
+
+                <!-- 5. Power Quality Analyzer (Tapped into the Main Grid line) -->
+                <rect x="730" y="575" width="12" height="20" class="svg-sensor" />
+                <text x="715" y="565" class="svg-sensor-label">POWER ANALYZER</text>
+            </g>
+
             <!-- Water Elements -->
             <polygon id="riverWater" points="0,400 100,400 100,400 0,400" class="svg-water" />
             <rect id="basinWater" x="100" y="500" width="140" height="0" class="svg-water" />
@@ -364,14 +450,20 @@
                 <!-- Ambient water mist/background -->
                 <rect x="250" y="230" width="200" height="520" fill="#00FFFF" opacity="0.15" />
                 <!-- High-velocity falling streams -->
-                <line x1="265" y1="230" x2="265" y2="750" class="svg-water-stream" stroke-width="3" style="animation-duration: 0.38s;" />
-                <line x1="290" y1="230" x2="290" y2="750" class="svg-water-stream" stroke-width="5" style="animation-duration: 0.28s;" />
+                <line x1="265" y1="230" x2="265" y2="750" class="svg-water-stream" stroke-width="3"
+                    style="animation-duration: 0.38s;" />
+                <line x1="290" y1="230" x2="290" y2="750" class="svg-water-stream" stroke-width="5"
+                    style="animation-duration: 0.28s;" />
                 <line x1="320" y1="230" x2="320" y2="750" class="svg-water-stream" stroke-width="4" />
-                <line x1="350" y1="230" x2="350" y2="750" class="svg-water-stream" stroke-width="6" style="animation-duration: 0.3s;" />
+                <line x1="350" y1="230" x2="350" y2="750" class="svg-water-stream" stroke-width="6"
+                    style="animation-duration: 0.3s;" />
                 <!-- The Main Drive Stream (Aimed dead-center at the Micro-Gen at x=375) -->
-                <line x1="375" y1="230" x2="375" y2="750" class="svg-water-stream" stroke-width="8" style="animation-duration: 0.25s;" /> 
-                <line x1="400" y1="230" x2="400" y2="750" class="svg-water-stream" stroke-width="5" style="animation-duration: 0.35s;" />
-                <line x1="430" y1="230" x2="430" y2="750" class="svg-water-stream" stroke-width="3" style="animation-duration: 0.45s;" />
+                <line x1="375" y1="230" x2="375" y2="750" class="svg-water-stream" stroke-width="8"
+                    style="animation-duration: 0.25s;" />
+                <line x1="400" y1="230" x2="400" y2="750" class="svg-water-stream" stroke-width="5"
+                    style="animation-duration: 0.35s;" />
+                <line x1="430" y1="230" x2="430" y2="750" class="svg-water-stream" stroke-width="3"
+                    style="animation-duration: 0.45s;" />
             </g>
             <rect id="siloWater" x="250" y="750" width="200" height="0" class="svg-water" clip-path="url(#siloClip)" />
             <rect id="dischargeWater" x="450" y="660" width="350" height="20" class="svg-water" style="opacity: 0;" />
@@ -393,7 +485,7 @@
 
             <!-- Micro-Hydro Generator (The Brain's Power Source) -->
             <g id="microTurbineGroup" transform="translate(375, 550)">
-                <circle cx="0" cy="0" r="20" fill="none" stroke="#555" stroke-width="2" stroke-dasharray="4 4"/>
+                <circle cx="0" cy="0" r="20" fill="none" stroke="#555" stroke-width="2" stroke-dasharray="4 4" />
                 <g id="microBlades">
                     <line x1="0" y1="-15" x2="0" y2="15" stroke="#00FF00" stroke-width="3" />
                     <line x1="-15" y1="0" x2="15" y2="0" stroke="#00FF00" stroke-width="3" />
@@ -407,7 +499,8 @@
                 <!-- Buried Battery Bank (Safely inside concrete) -->
                 <rect x="620" y="560" width="80" height="50" class="svg-concrete" stroke="#555" />
                 <text x="625" y="575" class="svg-text" style="font-size: 10px; fill: #aaa;">BATTERY</text>
-                <text x="625" y="595" class="svg-text" id="battSvgPercent" style="font-size: 16px; font-weight: bold; fill: #00FF00;">100%</text>
+                <text x="625" y="595" class="svg-text" id="battSvgPercent"
+                    style="font-size: 16px; font-weight: bold; fill: #00FF00;">100%</text>
 
                 <!-- Wire 1: Micro-Gen to Battery (Charging) -->
                 <path id="wireHydro" d="M 395 550 L 620 565" class="svg-wire wire-dead" />
@@ -421,9 +514,10 @@
                 <!-- Routed through the ceiling, plugging into the TOP of the turbine -->
                 <path id="wireTurbine" d="M 800 620 L 530 620 L 530 640" class="svg-wire wire-grid wire-flow" />
                 <text x="620" y="615" class="svg-text" style="font-size: 10px;">MAIN GRID (MEGAWATTS)</text>
-                
+
                 <!-- Ocean Discharge Label (Showing where the water actually goes) -->
-                <text id="btnToOcean" x="620" y="705" class="svg-text clickable-text" style="font-size: 12px; font-weight: bold; fill: #00FFFF; opacity: 0.7;">TO OCEAN DISCHARGE ►</text>
+                <text id="btnToOcean" x="620" y="705" class="svg-text clickable-text"
+                    style="font-size: 12px; font-weight: bold; fill: #00FFFF; opacity: 0.7;">TO OCEAN DISCHARGE ►</text>
             </g>
 
             <!-- Debris -->
@@ -445,10 +539,11 @@
         </svg>
 
         <!-- CAMERA 2: OCEAN OUTFALL FEED -->
-        <svg id="svgOcean" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet" style="display: none; background-color: #000;">
+        <svg id="svgOcean" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet"
+            style="display: none; background-color: #000;">
             <defs>
                 <pattern id="gridOcean" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#111" stroke-width="1"/>
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#111" stroke-width="1" />
                 </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#gridOcean)" />
@@ -464,17 +559,20 @@
             <!-- The Massive Discharge Pipe -->
             <rect x="0" y="600" width="250" height="80" class="svg-concrete" fill="#0a0a0a" />
             <text x="50" y="645" class="svg-text" style="font-size: 10px; fill: #555;">DISCHARGE TUNNEL</text>
-            
+
             <!-- The Blasting Water (Tied to Turbine State) -->
             <g id="oceanBlast" style="opacity: 0;">
                 <rect x="250" y="610" width="450" height="60" class="svg-water" />
                 <line x1="250" y1="625" x2="650" y2="625" class="svg-water-stream" stroke-width="8" />
-                <line x1="250" y1="640" x2="700" y2="640" class="svg-water-stream" stroke-width="12" style="animation-duration: 0.2s;" />
-                <line x1="250" y1="655" x2="600" y2="655" class="svg-water-stream" stroke-width="6" style="animation-duration: 0.3s;" />
+                <line x1="250" y1="640" x2="700" y2="640" class="svg-water-stream" stroke-width="12"
+                    style="animation-duration: 0.2s;" />
+                <line x1="250" y1="655" x2="600" y2="655" class="svg-water-stream" stroke-width="6"
+                    style="animation-duration: 0.3s;" />
             </g>
 
             <!-- UI: Camera Identification & Back Button -->
-            <text id="btnToMain" x="20" y="40" class="svg-text clickable-text" style="font-size: 14px; font-weight: bold; fill: #FFFF00;">◄ SWITCH TO CAM 1: MAIN FACILITY</text>
+            <text id="btnToMain" x="20" y="40" class="svg-text clickable-text"
+                style="font-size: 14px; font-weight: bold; fill: #FFFF00;">◄ SWITCH TO CAM 1: MAIN FACILITY</text>
             <text x="550" y="40" class="svg-text" style="fill: #888;">CAM 2: OCEAN OUTFALL</text>
             <circle cx="530" cy="35" r="5" fill="#FF0000">
                 <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite" />
@@ -690,7 +788,7 @@
                 if (siloCapacity > 100) siloCapacity = 100;
 
                 // Splashing motion: wobbles the top of the waterfall based on velocity
-                let splash = Math.sin(time / 150) * (velocity * 0.15); 
+                let splash = Math.sin(time / 150) * (velocity * 0.15);
                 waterfallDropTop = 250 + splash;
 
                 waterfallDropBottom += 800 * dt; // Water falls rapidly
@@ -816,12 +914,12 @@
 
             // Micro-Generator & Battery Logic
             const microBlades = document.getElementById('microBlades');
-            
+
             if (overtopping) {
                 // Water is falling! Spin the generator and charge the battery.
                 microRotation += 360 * dt * 2;
                 microBlades.setAttribute("transform", `rotate(${microRotation})`);
-                batteryCharge = Math.min(100, batteryCharge + (dt * 2)); 
+                batteryCharge = Math.min(100, batteryCharge + (dt * 2));
             }
 
             // If the grid is dead, the War Room drains the battery.
@@ -935,12 +1033,12 @@
                 // Everything is green and flowing
                 wireGrid.setAttribute("class", "svg-wire wire-grid wire-flow");
                 wireTurbine.setAttribute("class", "svg-wire wire-grid wire-flow");
-                battSvgPercent.style.fill = "#00FF00"; 
+                battSvgPercent.style.fill = "#00FF00";
             } else {
                 // Grid dies. Wires go dark. Battery turns warning yellow.
                 wireGrid.setAttribute("class", "svg-wire wire-dead");
                 wireTurbine.setAttribute("class", "svg-wire wire-dead");
-                battSvgPercent.style.fill = "#FFFF00"; 
+                battSvgPercent.style.fill = "#FFFF00";
             }
         }
 
